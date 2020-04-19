@@ -1,0 +1,36 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+file_path=r"C:\Users\HP\Desktop\datasets\training_set\training_set\movie\movie_names\ratings.csv"
+
+df=pd.read_csv(file_path,sep=',')
+
+movie_id=pd.read_csv(r"C:\Users\HP\Desktop\datasets\training_set\training_set\movie\movie_names\movies.csv")
+movies=pd.merge(df,movie_id,on="movieId")
+
+rating_movies_count=pd.DataFrame(movies.groupby('title')['rating'].mean())
+
+rating_movies_count['rating_counts']=pd.DataFrame(movies.groupby('title')['rating'].count())
+
+plt.figure(figsize=(8,6))
+plt.rcParams['patch.force_edgecolor'] = True
+rating_movies_count['rating'].hist(bins=50)
+sns.jointplot(x='rating',y='rating_counts',data=rating_movies_count,alpha=0.4)
+
+
+user_movie_rating = movies.pivot_table(index='user_id', columns='title', values='rating')
+
+movie=input("Movie name with year")
+movie_ratings=user_movie_rating[movie]
+
+movie_like=user_movie_rating.corrwith(movie_ratings)
+corr_movies=pd.DataFrame(movie_like,columns=['Match'])
+corr_movies.dropna(inplace=True)
+
+x=corr_movies.sort_values('Match',ascending=False).head(10)
+y=x.join(rating_movies_count['rating_counts'])
+print(y)
+
+
+
